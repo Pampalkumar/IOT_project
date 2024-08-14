@@ -1,0 +1,49 @@
+
+#include <SoftwareSerial.h>//for communicating digital pin
+
+int val;  float temp;  int temppin=A1;//declear variable
+String apiKey="VF4UGFJQ694ZEBS8";  //user API key
+
+SoftwareSerial ser(10, 11);  //Rx, Tx
+
+void setup() { 
+    Serial.begin(115200); //set the boudrate
+    ser.begin(115200);   }
+void loop() {
+  //send command to the ESP to set up the TCP connection  
+  String cmd = "AT+CIPSTART=\"TCP\",\""; //
+  cmd += "184.106.153.149";  //api.thingspeak.com
+  cmd += "\",80";
+
+  ser.println(cmd);
+   
+  if(ser.find("Error")) {
+    Serial.println("AT+CIPSTART error");
+    return;    }
+  val=analogRead(A0);  //Read the temperature sensor data
+  temp=(val*500/1024);  //store the data in the Celsius form
+
+  //Now prepare the GET string
+  String getStr = "GET /update?api_key=";
+  getStr += apiKey;
+  getStr +="&field1=";
+  getStr += String(temp);
+  getStr += "\r\n\r\n";
+  //send the data length to the ESP module
+  cmd = "AT+CIPSEND=";
+  cmd += String(getStr.length());
+  ser.println(cmd);
+
+ if(ser.find(">")) 
+  {
+    ser.print(getStr);  //send the actual data which is available in getStr    
+  }
+  else {
+    ser.println("AT+CIPCLOSE");  //close the TCP connection
+    Serial.println("AT+CIPCLOSE");  //alert the user
+    }
+
+  //Thingspeak needs a 15 sec of delay between the updates.
+  //So After successful update led on Arduino board should blink twice.
+
+ }    // loop() closed
