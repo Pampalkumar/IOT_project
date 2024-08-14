@@ -1,0 +1,16 @@
+#include<SoftwareSerial.h>//  communication on other digital pins of an Arduino board
+SoftwareSerial m(10,11);//10th is Rx and 11th Tx
+void setup() 
+{
+  Serial.begin(115200);//set the boudrate 
+  m.begin(115200);
+}
+void loop() {
+  if(m.available()) {
+    Serial.write(m.read());//communicate serial monitor
+  }
+  if(Serial.available())
+  {
+    m.write(Serial.read());// for comunicate ESP8266 
+  }    
+}
